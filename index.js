@@ -63,6 +63,9 @@ const CSS_TEXT = [
   "[data-fr-app='app'] .text-gray-600,[data-fr-app='app'] .text-gray-500,[data-fr-app='app'] .text-gray-400,[data-fr-app='app'] .text-slate-600,[data-fr-app='app'] .text-slate-500,[data-fr-app='app'] .text-neutral-600,[data-fr-app='app'] .text-neutral-500{color:hsl(0 0% 64%) !important;-webkit-text-fill-color:hsl(0 0% 64%) !important;}",
   // light borders -> subtle dark
   "[data-fr-app='app'] .border-gray-200,[data-fr-app='app'] .border-gray-100,[data-fr-app='app'] .border-gray-300,[data-fr-app='app'] .border-slate-200,[data-fr-app='app'] .border-slate-100,[data-fr-app='app'] .border-neutral-200{border-color:hsl(0 0% 20%) !important;}",
+  // selected/active list item (light lavender bg-[#F4F3FF]) -> dark surface with a blue accent border (Ycode 'selected' look)
+  "[data-fr-app='app'] [class*='bg-[#F4F3FF'],[data-fr-app='app'] [class*='bg-[#EEF'],[data-fr-app='app'] [class*='bg-[#EFF']{background-color:hsl(217 30% 18%) !important;}",
+  "[data-fr-app='app'] [class*='border-[#D9D6FE'],[data-fr-app='app'] [class*='border-[#C7D']{border-color:hsl(217 60% 48%) !important;}",
   // hover states designed for light bg -> dark
   "[data-fr-app='app'] .hover\\:bg-gray-50:hover,[data-fr-app='app'] .hover\\:bg-gray-100:hover,[data-fr-app='app'] .hover\\:bg-slate-100:hover,[data-fr-app='app'] .hover\\:bg-neutral-100:hover{background-color:hsl(0 0% 18%) !important;}",
   // Ycode buttons: not pill-shaped; secondary/outline buttons use the input surface
