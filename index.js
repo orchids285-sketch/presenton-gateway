@@ -32,12 +32,12 @@ const CSS_TEXT = [
   "--background:0 0% 10.5%;--foreground:0 0% 98%;",
   "--card:0 0% 12.5%;--card-foreground:0 0% 98%;",
   "--popover:0 0% 15%;--popover-foreground:0 0% 96%;",
-  "--primary:217 91% 60%;--primary-foreground:0 0% 100%;",
+  "--primary:221 83% 53%;--primary-foreground:0 0% 100%;",
   "--secondary:0 0% 17%;--secondary-foreground:0 0% 98%;",
   "--muted:0 0% 17%;--muted-foreground:0 0% 63%;",
   "--accent:0 0% 19%;--accent-foreground:0 0% 98%;",
   "--destructive:0 72% 51%;--destructive-foreground:0 0% 98%;",
-  "--border:0 0% 20%;--input:0 0% 20%;--ring:217 91% 60%;--radius:0.625rem;",
+  "--border:0 0% 20%;--input:0 0% 20%;--ring:221 83% 53%;--radius:0.625rem;",
   "--font-syne:'Inter';--font-unbounded:'Inter';--font-inter:'Inter';color-scheme:dark;}",
   "html{background:hsl(0 0% 10.5%) !important;}",
   "body,button,input,textarea,select,h1,h2,h3,h4,h5,h6,p,span,div,a,label{",
@@ -51,8 +51,8 @@ const CSS_TEXT = [
   // white chip/pill backgrounds (rounded-full) -> dark card so they match Ycode (slides aren't rounded-full, so untouched)
   ".bg-white.rounded-full{background-color:hsl(0 0% 16%) !important;}",
   // primary CTAs (Presenton overrides bg-primary with an inline peach gradient) -> Ycode blue (CSS !important beats inline)
-  ".bg-primary{background-image:none !important;background-color:hsl(217 91% 60%) !important;color:#fff !important;}",
-  ".bg-primary:hover{background-color:hsl(217 91% 55%) !important;}",
+  ".bg-primary{background-image:none !important;background-color:hsl(221 83% 53%) !important;color:#fff !important;}",
+  ".bg-primary:hover{background-color:hsl(221 74% 46%) !important;}",
   ".bg-primary [class*='text-[#10'],.bg-primary [class*='text-[#11']{color:#fff !important;-webkit-text-fill-color:#fff !important;}",
   // ===== APP-PAGE reskin (dashboard/templates/upload/settings — data-fr-app='app'); the editor (data-fr-app='editor') is left alone so slides stay white =====
   // hardcoded white/light page + card backgrounds -> Ycode dark surfaces (incl. semi-transparent bg-white/40..90)
@@ -80,6 +80,12 @@ const CSS_TEXT = [
   "[data-fr-app='app'] [class*='border-[#E1'],[data-fr-app='app'] [class*='border-[#E5'],[data-fr-app='app'] [class*='border-[#E8'],[data-fr-app='app'] [class*='border-[#EEE'],[data-fr-app='app'] [class*='border-[#F0'],[data-fr-app='app'] [class*='border-[#DDD'],[data-fr-app='app'] [class*='border-white']{border-color:transparent !important;}",
   // sidebar light bg -> dark
   "[data-fr-app='app'] [class*='bg-[#F6'],[data-fr-app='app'] [class*='bg-[#F9'],[data-fr-app='app'] [class*='bg-[#FCF']{background-color:hsl(0 0% 11%) !important;}",
+  // ===== Dropdowns / menus (slides count, language, settings) -> Ycode popover style =====
+  "[data-fr-app='app'] [role='menu'],[data-fr-app='app'] [role='listbox'],[data-fr-app='app'] [class*='DropdownMenuContent'],[data-fr-app='app'] [data-radix-menu-content],[data-fr-app='app'] [data-radix-popper-content-wrapper] > div{background-color:hsl(0 0% 13%) !important;border:1px solid hsl(0 0% 100% / 0.08) !important;border-radius:12px !important;box-shadow:0 12px 40px rgba(0,0,0,.55) !important;padding:4px !important;}",
+  "[data-fr-app='app'] [role='menuitem'],[data-fr-app='app'] [role='option']{border-radius:8px !important;color:#e6e6e9 !important;-webkit-text-fill-color:#e6e6e9 !important;font-family:'Inter' !important;}",
+  "[data-fr-app='app'] [role='menuitem']:hover,[data-fr-app='app'] [role='option']:hover,[data-fr-app='app'] [role='menuitem'][data-highlighted],[data-fr-app='app'] [role='option'][data-highlighted]{background-color:hsl(0 0% 100% / 0.08) !important;}",
+  // number/search inputs inside dropdowns -> filled dark, rounded, no white border
+  "[data-fr-app='app'] [role='menu'] input,[data-fr-app='app'] [role='listbox'] input{background-color:hsl(0 0% 100% / 0.06) !important;border:1px solid hsl(0 0% 100% / 0.1) !important;border-radius:8px !important;color:#e6e6e9 !important;}",
   // hover states designed for light bg -> dark
   "[data-fr-app='app'] .hover\\:bg-gray-50:hover,[data-fr-app='app'] .hover\\:bg-gray-100:hover,[data-fr-app='app'] .hover\\:bg-slate-100:hover,[data-fr-app='app'] .hover\\:bg-neutral-100:hover{background-color:hsl(0 0% 18%) !important;}",
   // ===== Ycode BUTTON style =====
@@ -125,7 +131,7 @@ const INJECT = `<script id="fr-ycode-js">
   function fixCTAs(){
     try{
       document.querySelectorAll('[style*="linear-gradient(270deg"]').forEach(function(el){
-        el.style.setProperty('background','hsl(217 91% 60%)','important');
+        el.style.setProperty('background','hsl(221 83% 53%)','important');
         el.style.setProperty('background-image','none','important');
         el.style.setProperty('color','#ffffff','important');
         el.style.setProperty('-webkit-text-fill-color','#ffffff','important');
@@ -158,20 +164,39 @@ const INJECT = `<script id="fr-ycode-js">
         var t=(el.textContent||'').trim(); var w=el.getBoundingClientRect().width;
         if((t==='Settings'||t==='Community'||t==='Help'||t==='Templates')&&w>0&&w<190) hide(el);
       });
-      // 5) stick the generation controls (Auto slides / Auto (English) / sliders) into one Ycode-style segmented bar
+      // 5) generation controls -> ONE Ycode segmented bar (light-gray track) with mini-bubble items inside
       var autoBtn=null; document.querySelectorAll('button').forEach(function(b){ if(has(b,'Auto slides')) autoBtn=b; });
       if(autoBtn && autoBtn.parentElement){
         var c=autoBtn.parentElement;
+        c.style.setProperty('display','inline-flex','important');
         c.style.setProperty('gap','4px','important');
-        c.style.setProperty('background-color','hsl(0 0% 100% / 0.05)','important');
+        c.style.setProperty('background-color','hsl(0 0% 100% / 0.07)','important'); // lighter gray track
         c.style.setProperty('border-radius','12px','important');
         c.style.setProperty('padding','4px','important');
         c.style.setProperty('width','fit-content','important');
         c.style.setProperty('flex-wrap','nowrap','important');
         Array.prototype.forEach.call(c.children,function(ch){
           var bt = ch.tagName==='BUTTON' ? ch : (ch.querySelector && ch.querySelector('button'));
-          if(bt){ bt.style.setProperty('background-color','transparent','important'); bt.style.setProperty('border','0','important'); bt.style.setProperty('box-shadow','none','important'); }
+          if(bt){ bt.style.setProperty('background-color','hsl(0 0% 100% / 0.1)','important'); bt.style.setProperty('border','0','important'); bt.style.setProperty('box-shadow','none','important'); bt.style.setProperty('border-radius','8px','important'); } // mini bubble
         });
+      }
+      // 6) DELETE the left sidebar entirely (narrow sticky/fixed full-height left column)
+      document.querySelectorAll("[class*='h-screen'],aside,nav").forEach(function(el){
+        var cs=getComputedStyle(el); var r=el.getBoundingClientRect();
+        if((cs.position==='sticky'||cs.position==='fixed') && r.width>0 && r.width<230 && r.left<70 && r.height>400) hide(el);
+      });
+      // 7) center the prompt column
+      var ta=document.querySelector('textarea');
+      if(ta){ var node=ta;
+        for(var i=0;i<9&&node;i++){
+          if(node.parentElement && node.querySelector && node.querySelector('textarea') && has(node,'Get Started')){
+            node.style.setProperty('max-width','900px','important');
+            node.style.setProperty('margin-left','auto','important');
+            node.style.setProperty('margin-right','auto','important');
+            break;
+          }
+          node=node.parentElement;
+        }
       }
     }catch(e){}
   }
