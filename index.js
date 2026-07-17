@@ -22,23 +22,60 @@ const AUTH = 'Basic ' + Buffer.from(USER + ':' + PASS).toString('base64');
 const BRAND = process.env.BRAND_NAME || 'Slides';
 const PORT = process.env.PORT || 3000;
 
+// Ycode look-and-feel: Presenton uses the same shadcn token system as Ycode
+// (hsl(var(--token))), so we override the tokens with Ycode's DARK values
+// (converted to HSL) + Inter font — instant visual coherence, no re-creation.
 const INJECT = `
-<style id="fr-debrand">
+<style id="fr-ycode-theme">
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  :root, .dark, html {
+    --background: 0 0% 10.5%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 12.5%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 15%;
+    --popover-foreground: 0 0% 96%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 17%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 17%;
+    --muted-foreground: 0 0% 63%;
+    --accent: 0 0% 19%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 217 91% 60%;
+    --radius: 0.625rem;
+    --font-syne: 'Inter'; --font-unbounded: 'Inter'; --font-inter: 'Inter';
+    color-scheme: dark;
+  }
+  html { background: hsl(0 0% 10.5%); }
+  body, button, input, textarea, select, h1, h2, h3, h4, h5, h6, p, span, div, a, label {
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif !important;
+  }
+  /* debrand */
   a[href*="presenton.ai"], a[href*="github.com/presenton"],
   img[src*="logo" i], img[alt*="presenton" i], [aria-label*="presenton" i]{display:none !important;}
 </style>
-<script id="fr-debrand-js">
+<script id="fr-ycode-js">
 (function(){
   var RE=/presenton/ig;
+  try{ document.documentElement.classList.add('dark'); }catch(e){}
   function scrub(){
     try{
+      if(!document.documentElement.classList.contains('dark')) document.documentElement.classList.add('dark');
       if(document.title && /presenton/i.test(document.title)) document.title=${JSON.stringify(BRAND)};
       document.querySelectorAll('img,svg').forEach(function(el){
         var s=(el.getAttribute('alt')||'')+' '+(el.getAttribute('aria-label')||'')+' '+(el.getAttribute('src')||'');
         if(/presenton/i.test(s)) el.style.display='none';
       });
-      var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,null,false),n;
-      while((n=w.nextNode())){ if(RE.test(n.nodeValue)){ n.nodeValue=n.nodeValue.replace(RE,${JSON.stringify(BRAND)}); } }
+      if(document.body){
+        var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,null,false),n;
+        while((n=w.nextNode())){ if(RE.test(n.nodeValue)){ n.nodeValue=n.nodeValue.replace(RE,${JSON.stringify(BRAND)}); } }
+      }
     }catch(e){}
   }
   var mo=new MutationObserver(function(){scrub();});
