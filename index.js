@@ -78,8 +78,8 @@ const CSS_TEXT = [
   // Ycode buttons are squircles (rounded-xl), NOT Presenton's rounded-full pills.
   "[data-fr-app='app'] button{font-family:'Inter' !important;font-weight:500 !important;}",
   // pill buttons + pill-triggers (Auto slides / Auto (English) / icon buttons) -> Ycode squircle w/ subtle bg-input fill, no ring, no shadow
-  "[data-fr-app='app'] button[class*='rounded-full'],[data-fr-app='app'] a[class*='rounded-full']{border-radius:10px !important;box-shadow:none !important;--tw-ring-shadow:0 0 #0000 !important;--tw-ring-offset-shadow:0 0 #0000 !important;--tw-ring-color:transparent !important;background-color:hsl(0 0% 100% / 0.06) !important;border:1px solid hsl(0 0% 100% / 0.08) !important;color:#e6e6e9 !important;}",
-  "[data-fr-app='app'] button[class*='rounded-full']:hover,[data-fr-app='app'] a[class*='rounded-full']:hover{background-color:hsl(0 0% 100% / 0.1) !important;}",
+  "[data-fr-app='app'] button[class*='rounded-full'],[data-fr-app='app'] a[class*='rounded-full']{border-radius:10px !important;box-shadow:none !important;--tw-ring-shadow:0 0 #0000 !important;--tw-ring-offset-shadow:0 0 #0000 !important;--tw-ring-color:transparent !important;background-color:hsl(0 0% 100% / 0.1) !important;border:0 !important;color:#e6e6e9 !important;}",
+  "[data-fr-app='app'] button[class*='rounded-full']:hover,[data-fr-app='app'] a[class*='rounded-full']:hover{background-color:hsl(0 0% 100% / 0.16) !important;}",
   "[data-fr-app='app'] button[class*='rounded-full'] span,[data-fr-app='app'] button[class*='rounded-full'] p{color:#e6e6e9 !important;-webkit-text-fill-color:#e6e6e9 !important;}",
   // primary CTA -> Ycode blue squircle (h-9-ish, rounded-xl, white, medium)
   ".bg-primary,[data-fr-app='app'] [class*='rounded-[28px]'],[data-fr-app='app'] [class*='rounded-[48px]']{border-radius:12px !important;}",
@@ -137,14 +137,9 @@ const INJECT = `<script id="fr-ycode-js">
       });
       // 2) decorative sparkle SVGs around the "Generate" hero title (svg siblings of the h1)
       var h1=null; document.querySelectorAll('h1').forEach(function(e){ if(has(e,'Generate')) h1=e; });
-      if(h1){
-        h1.querySelectorAll('svg,img').forEach(hide);
-        var w1=h1.parentElement;
-        if(w1){ Array.prototype.forEach.call(w1.children,function(c){ if(c.tagName&&c.tagName.toLowerCase()==='svg') hide(c); });
-          var w2=w1.parentElement;
-          if(w2){ Array.prototype.forEach.call(w2.children,function(c){ if(c.tagName&&c.tagName.toLowerCase()==='svg') hide(c); }); }
-        }
-      }
+      // remove the hero title "Generate" + the subtitle — user wants just the prompt space
+      if(h1) hide(h1);
+      document.querySelectorAll('p,h2,span,div').forEach(function(el){ if((el.textContent||'').trim()==='Turn prompts or documents into presentations with AI') hide(el); });
       // 3) ugly attachments uploader (label + dashed drop box) — user wants a clean prompt only
       document.querySelectorAll('*').forEach(function(el){ if((el.textContent||'').trim()==='Attachments (optional)') hide(el.parentElement||el); });
       document.querySelectorAll("[class*='border-dashed']").forEach(function(el){
