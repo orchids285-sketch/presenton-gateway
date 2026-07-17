@@ -250,7 +250,15 @@ const INJECT = `<script id="fr-ycode-js">
       var tab=null;
       document.querySelectorAll("[role='tab'],button,a").forEach(function(b){ if((b.textContent||'').trim()==='Select Template') tab=b; });
       if(tab && tab.getAttribute('data-state')!=='active'){ tab.click(); return; } // open the tab so cards mount
-      var card=document.querySelector("[class*='rounded-[22px]']"); // first template card
+      // pick the FIRST BUILT-IN template card. The "Build Template" card also uses
+      // rounded-[22px] but navigates to /custom-template, so skip it explicitly.
+      var card=null;
+      document.querySelectorAll("[class*='rounded-[22px]']").forEach(function(el){
+        if(card) return;
+        var t=(el.textContent||'');
+        if(t.indexOf('Build Template')>=0||t.indexOf('Build Your Own')>=0) return;
+        card=el;
+      });
       if(card){ card.click(); }
     }catch(e){}
   }
