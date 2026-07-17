@@ -51,7 +51,21 @@ const CSS_TEXT = [
   ".bg-white.rounded-full{background-color:hsl(0 0% 16%) !important;}",
   // primary CTAs (Presenton overrides bg-primary with an inline peach gradient) -> Ycode blue (CSS !important beats inline)
   ".bg-primary{background-image:none !important;background-color:hsl(217 91% 60%) !important;color:#fff !important;}",
+  ".bg-primary:hover{background-color:hsl(217 91% 55%) !important;}",
   ".bg-primary [class*='text-[#10'],.bg-primary [class*='text-[#11']{color:#fff !important;-webkit-text-fill-color:#fff !important;}",
+  // ===== APP-PAGE reskin (dashboard/templates/upload/settings — data-fr-app='app'); the editor (data-fr-app='editor') is left alone so slides stay white =====
+  // hardcoded white/light page + card backgrounds -> Ycode dark surfaces
+  "[data-fr-app='app'] .bg-white{background-color:hsl(0 0% 12.5%) !important;}",
+  "[data-fr-app='app'] .bg-gray-50,[data-fr-app='app'] .bg-gray-100,[data-fr-app='app'] .bg-slate-50,[data-fr-app='app'] .bg-slate-100,[data-fr-app='app'] .bg-neutral-50,[data-fr-app='app'] .bg-neutral-100,[data-fr-app='app'] .bg-zinc-50,[data-fr-app='app'] .bg-zinc-100,[data-fr-app='app'] .bg-gray-200{background-color:hsl(0 0% 16%) !important;}",
+  // dark hardcoded text -> light (Tailwind grays)
+  "[data-fr-app='app'] .text-black,[data-fr-app='app'] .text-gray-900,[data-fr-app='app'] .text-gray-800,[data-fr-app='app'] .text-gray-700,[data-fr-app='app'] .text-slate-900,[data-fr-app='app'] .text-slate-800,[data-fr-app='app'] .text-slate-700,[data-fr-app='app'] .text-neutral-900,[data-fr-app='app'] .text-neutral-800,[data-fr-app='app'] .text-zinc-900{color:#f2f2f5 !important;-webkit-text-fill-color:#f2f2f5 !important;}",
+  "[data-fr-app='app'] .text-gray-600,[data-fr-app='app'] .text-gray-500,[data-fr-app='app'] .text-gray-400,[data-fr-app='app'] .text-slate-600,[data-fr-app='app'] .text-slate-500,[data-fr-app='app'] .text-neutral-600,[data-fr-app='app'] .text-neutral-500{color:hsl(0 0% 64%) !important;-webkit-text-fill-color:hsl(0 0% 64%) !important;}",
+  // light borders -> subtle dark
+  "[data-fr-app='app'] .border-gray-200,[data-fr-app='app'] .border-gray-100,[data-fr-app='app'] .border-gray-300,[data-fr-app='app'] .border-slate-200,[data-fr-app='app'] .border-slate-100,[data-fr-app='app'] .border-neutral-200{border-color:hsl(0 0% 20%) !important;}",
+  // hover states designed for light bg -> dark
+  "[data-fr-app='app'] .hover\\:bg-gray-50:hover,[data-fr-app='app'] .hover\\:bg-gray-100:hover,[data-fr-app='app'] .hover\\:bg-slate-100:hover,[data-fr-app='app'] .hover\\:bg-neutral-100:hover{background-color:hsl(0 0% 18%) !important;}",
+  // Ycode buttons: not pill-shaped; secondary/outline buttons use the input surface
+  "[data-fr-app='app'] button{font-family:'Inter' !important;font-weight:500 !important;}",
   "a[href*='presenton.ai'],a[href*='github.com/presenton'],img[src*='logo' i],img[alt*='presenton' i],[aria-label*='presenton' i]{display:none !important;}",
 ].join('');
 
@@ -66,7 +80,13 @@ const INJECT = `<script id="fr-ycode-js">
     if(!document.getElementById('fr-ycode-font')){var l=document.createElement('link');l.id='fr-ycode-font';l.rel='stylesheet';l.href=FONT;head.appendChild(l);}
     var s=document.getElementById('fr-ycode-style');
     if(!s||!s.isConnected){ if(!s){s=document.createElement('style');s.id='fr-ycode-style';s.textContent=CSS;} head.appendChild(s); }
-    try{ document.documentElement.classList.add('dark'); }catch(e){}
+    try{
+      document.documentElement.classList.add('dark');
+      // Route flag: the slide editor keeps white slides; every other page gets the full app reskin.
+      var p=location.pathname;
+      var isEditor=/^\/presentation(\/|$)/.test(p)||/^\/pdf-maker/.test(p);
+      document.documentElement.setAttribute('data-fr-app', isEditor?'editor':'app');
+    }catch(e){}
   }
   function scrub(){
     try{
