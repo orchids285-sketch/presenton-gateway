@@ -54,8 +54,8 @@ const CSS_TEXT = [
   ".bg-primary:hover{background-color:hsl(217 91% 55%) !important;}",
   ".bg-primary [class*='text-[#10'],.bg-primary [class*='text-[#11']{color:#fff !important;-webkit-text-fill-color:#fff !important;}",
   // ===== APP-PAGE reskin (dashboard/templates/upload/settings — data-fr-app='app'); the editor (data-fr-app='editor') is left alone so slides stay white =====
-  // hardcoded white/light page + card backgrounds -> Ycode dark surfaces
-  "[data-fr-app='app'] .bg-white{background-color:hsl(0 0% 12.5%) !important;}",
+  // hardcoded white/light page + card backgrounds -> Ycode dark surfaces (incl. semi-transparent bg-white/40..90)
+  "[data-fr-app='app'] .bg-white,[data-fr-app='app'] [class*='bg-white/40'],[data-fr-app='app'] [class*='bg-white/50'],[data-fr-app='app'] [class*='bg-white/60'],[data-fr-app='app'] [class*='bg-white/70'],[data-fr-app='app'] [class*='bg-white/80'],[data-fr-app='app'] [class*='bg-white/90']{background-color:hsl(0 0% 13%) !important;}",
   "[data-fr-app='app'] .bg-gray-50,[data-fr-app='app'] .bg-gray-100,[data-fr-app='app'] .bg-slate-50,[data-fr-app='app'] .bg-slate-100,[data-fr-app='app'] .bg-neutral-50,[data-fr-app='app'] .bg-neutral-100,[data-fr-app='app'] .bg-zinc-50,[data-fr-app='app'] .bg-zinc-100,[data-fr-app='app'] .bg-gray-200{background-color:hsl(0 0% 16%) !important;}",
   // dark hardcoded text -> light (Tailwind grays)
   "[data-fr-app='app'] .text-black,[data-fr-app='app'] .text-gray-900,[data-fr-app='app'] .text-gray-800,[data-fr-app='app'] .text-gray-700,[data-fr-app='app'] .text-slate-900,[data-fr-app='app'] .text-slate-800,[data-fr-app='app'] .text-slate-700,[data-fr-app='app'] .text-neutral-900,[data-fr-app='app'] .text-neutral-800,[data-fr-app='app'] .text-zinc-900{color:#f2f2f5 !important;-webkit-text-fill-color:#f2f2f5 !important;}",
@@ -95,7 +95,21 @@ const INJECT = `<script id="fr-ycode-js">
       if(document.body){var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,null,false),n;while((n=w.nextNode())){if(RE.test(n.nodeValue))n.nodeValue=n.nodeValue.replace(RE,BRAND);}}
     }catch(e){}
   }
-  function tick(){ ensure(); scrub(); }
+  // Presenton's primary CTAs use an INLINE peach gradient (Get Started / New Template / …).
+  // CSS can't target inline-style values, so restyle them to Ycode's blue squircle button in JS.
+  function fixCTAs(){
+    try{
+      document.querySelectorAll('[style*="linear-gradient(270deg"]').forEach(function(el){
+        el.style.setProperty('background','hsl(217 91% 60%)','important');
+        el.style.setProperty('background-image','none','important');
+        el.style.setProperty('color','#ffffff','important');
+        el.style.setProperty('-webkit-text-fill-color','#ffffff','important');
+        el.style.setProperty('border-radius','12px','important');
+        el.style.setProperty('box-shadow','none','important');
+      });
+    }catch(e){}
+  }
+  function tick(){ ensure(); scrub(); fixCTAs(); }
   var mo=new MutationObserver(tick);
   function boot(){ tick(); mo.observe(document.documentElement,{subtree:true,childList:true,characterData:true}); setInterval(tick,1500); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
