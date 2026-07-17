@@ -81,9 +81,9 @@ const CSS_TEXT = [
   // sidebar light bg -> dark
   "[data-fr-app='app'] [class*='bg-[#F6'],[data-fr-app='app'] [class*='bg-[#F9'],[data-fr-app='app'] [class*='bg-[#FCF']{background-color:hsl(0 0% 11%) !important;}",
   // ===== Dropdowns / menus (slides count, language, settings) -> Ycode popover style =====
-  "[data-fr-app='app'] [role='menu'],[data-fr-app='app'] [role='listbox'],[data-fr-app='app'] [class*='DropdownMenuContent'],[data-fr-app='app'] [data-radix-menu-content],[data-fr-app='app'] [data-radix-popper-content-wrapper] > div{background-color:hsl(0 0% 13%) !important;border:1px solid hsl(0 0% 100% / 0.08) !important;border-radius:12px !important;box-shadow:0 12px 40px rgba(0,0,0,.55) !important;padding:4px !important;}",
-  "[data-fr-app='app'] [role='menuitem'],[data-fr-app='app'] [role='option']{border-radius:8px !important;color:#e6e6e9 !important;-webkit-text-fill-color:#e6e6e9 !important;font-family:'Inter' !important;}",
-  "[data-fr-app='app'] [role='menuitem']:hover,[data-fr-app='app'] [role='option']:hover,[data-fr-app='app'] [role='menuitem'][data-highlighted],[data-fr-app='app'] [role='option'][data-highlighted]{background-color:hsl(0 0% 100% / 0.08) !important;}",
+  "[data-fr-app='app'] [role='menu'],[data-fr-app='app'] [role='listbox'],[data-fr-app='app'] [class*='DropdownMenuContent'],[data-fr-app='app'] [data-radix-menu-content],[data-fr-app='app'] [data-radix-popper-content-wrapper] > div{background-color:hsl(0 0% 14%) !important;border:1px solid hsl(0 0% 100% / 0.06) !important;border-radius:14px !important;box-shadow:0 16px 48px rgba(0,0,0,.6) !important;padding:5px !important;}",
+  "[data-fr-app='app'] [role='menuitem'],[data-fr-app='app'] [role='option'],[data-fr-app='app'] [role='listbox'] > *{border-radius:9px !important;color:#e6e6e9 !important;-webkit-text-fill-color:#e6e6e9 !important;font-family:'Inter' !important;font-size:13px !important;padding:6px 10px !important;margin:1px 0 !important;}",
+  "[data-fr-app='app'] [role='menuitem']:hover,[data-fr-app='app'] [role='option']:hover,[data-fr-app='app'] [role='listbox'] > *:hover,[data-fr-app='app'] [role='menuitem'][data-highlighted],[data-fr-app='app'] [role='option'][data-highlighted],[data-fr-app='app'] [role='option'][data-state='checked']{background-color:hsl(221 60% 40% / 0.25) !important;}",
   // number/search inputs inside dropdowns -> filled dark, rounded, no white border
   "[data-fr-app='app'] [role='menu'] input,[data-fr-app='app'] [role='listbox'] input{background-color:hsl(0 0% 100% / 0.06) !important;border:1px solid hsl(0 0% 100% / 0.1) !important;border-radius:8px !important;color:#e6e6e9 !important;}",
   // hover states designed for light bg -> dark
@@ -164,20 +164,37 @@ const INJECT = `<script id="fr-ycode-js">
         var t=(el.textContent||'').trim(); var w=el.getBoundingClientRect().width;
         if((t==='Settings'||t==='Community'||t==='Help'||t==='Templates')&&w>0&&w<190) hide(el);
       });
-      // 5) generation controls -> ONE Ycode segmented bar (light-gray track) with mini-bubble items inside
+      // 5) generation controls -> ONE Ycode segmented control: a VISIBLE light-gray track
+      //    with clearly-raised mini-bubble items inside (like the Ycode tab-bar reference).
       var autoBtn=null; document.querySelectorAll('button').forEach(function(b){ if(has(b,'Auto slides')) autoBtn=b; });
       if(autoBtn && autoBtn.parentElement){
         var c=autoBtn.parentElement;
         c.style.setProperty('display','inline-flex','important');
-        c.style.setProperty('gap','4px','important');
-        c.style.setProperty('background-color','hsl(0 0% 100% / 0.07)','important'); // lighter gray track
+        c.style.setProperty('align-items','center','important');
+        c.style.setProperty('gap','3px','important');
+        c.style.setProperty('background-color','hsl(0 0% 15%)','important'); // the light-gray track
+        c.style.setProperty('border','1px solid hsl(0 0% 100% / 0.05)','important');
         c.style.setProperty('border-radius','12px','important');
-        c.style.setProperty('padding','4px','important');
+        c.style.setProperty('padding','3px','important');
         c.style.setProperty('width','fit-content','important');
         c.style.setProperty('flex-wrap','nowrap','important');
         Array.prototype.forEach.call(c.children,function(ch){
-          var bt = ch.tagName==='BUTTON' ? ch : (ch.querySelector && ch.querySelector('button'));
-          if(bt){ bt.style.setProperty('background-color','hsl(0 0% 100% / 0.1)','important'); bt.style.setProperty('border','0','important'); bt.style.setProperty('box-shadow','none','important'); bt.style.setProperty('border-radius','8px','important'); } // mini bubble
+          // each control (2 dropdowns + the settings wrapper) becomes a raised mini-bubble
+          ch.style.setProperty('background-color','hsl(0 0% 26%)','important');
+          ch.style.setProperty('border','0','important');
+          ch.style.setProperty('box-shadow','none','important');
+          ch.style.setProperty('border-radius','8px','important');
+          ch.style.setProperty('height','30px','important');
+          ch.style.setProperty('overflow','hidden','important');
+          if(ch.tagName==='BUTTON'){ ch.style.setProperty('font-size','13px','important'); }
+          var inner=ch.querySelector && ch.querySelector('button');
+          if(inner && inner!==ch){
+            inner.style.setProperty('background-color','transparent','important');
+            inner.style.setProperty('border','0','important');
+            inner.style.setProperty('box-shadow','none','important');
+            inner.style.setProperty('height','30px','important');
+            inner.style.setProperty('font-size','13px','important');
+          }
         });
       }
       // 6) DELETE the left sidebar entirely (narrow sticky/fixed full-height left column)
