@@ -74,8 +74,15 @@ const CSS_TEXT = [
   "[data-fr-app='app'] h1 svg,[data-fr-app='app'] h1 img{display:none !important;}",
   // hover states designed for light bg -> dark
   "[data-fr-app='app'] .hover\\:bg-gray-50:hover,[data-fr-app='app'] .hover\\:bg-gray-100:hover,[data-fr-app='app'] .hover\\:bg-slate-100:hover,[data-fr-app='app'] .hover\\:bg-neutral-100:hover{background-color:hsl(0 0% 18%) !important;}",
-  // Ycode buttons: not pill-shaped; secondary/outline buttons use the input surface
+  // ===== Ycode BUTTON style =====
+  // Ycode buttons are squircles (rounded-xl), NOT Presenton's rounded-full pills.
   "[data-fr-app='app'] button{font-family:'Inter' !important;font-weight:500 !important;}",
+  // pill buttons + pill-triggers (Auto slides / Auto (English) / icon buttons) -> Ycode squircle w/ subtle bg-input fill, no ring, no shadow
+  "[data-fr-app='app'] button[class*='rounded-full'],[data-fr-app='app'] a[class*='rounded-full']{border-radius:10px !important;box-shadow:none !important;--tw-ring-shadow:0 0 #0000 !important;--tw-ring-offset-shadow:0 0 #0000 !important;--tw-ring-color:transparent !important;background-color:hsl(0 0% 100% / 0.06) !important;border:1px solid hsl(0 0% 100% / 0.08) !important;color:#e6e6e9 !important;}",
+  "[data-fr-app='app'] button[class*='rounded-full']:hover,[data-fr-app='app'] a[class*='rounded-full']:hover{background-color:hsl(0 0% 100% / 0.1) !important;}",
+  "[data-fr-app='app'] button[class*='rounded-full'] span,[data-fr-app='app'] button[class*='rounded-full'] p{color:#e6e6e9 !important;-webkit-text-fill-color:#e6e6e9 !important;}",
+  // primary CTA -> Ycode blue squircle (h-9-ish, rounded-xl, white, medium)
+  ".bg-primary,[data-fr-app='app'] [class*='rounded-[28px]'],[data-fr-app='app'] [class*='rounded-[48px]']{border-radius:12px !important;}",
   "a[href*='presenton.ai'],a[href*='github.com/presenton'],img[src*='logo' i],img[alt*='presenton' i],[aria-label*='presenton' i]{display:none !important;}",
 ].join('');
 
