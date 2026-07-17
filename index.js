@@ -84,7 +84,7 @@ const INJECT = `<script id="fr-ycode-js">
       document.documentElement.classList.add('dark');
       // Route flag: the slide editor keeps white slides; every other page gets the full app reskin.
       var p=location.pathname;
-      var isEditor=/^\/presentation(\/|$)/.test(p)||/^\/pdf-maker/.test(p);
+      var isEditor=(p.indexOf('/presentation')===0)||(p.indexOf('/pdf-maker')===0);
       document.documentElement.setAttribute('data-fr-app', isEditor?'editor':'app');
     }catch(e){}
   }
