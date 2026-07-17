@@ -66,6 +66,10 @@ const CSS_TEXT = [
   // selected/active list item (light lavender bg-[#F4F3FF]) -> dark surface with a blue accent border (Ycode 'selected' look)
   "[data-fr-app='app'] [class*='bg-[#F4F3FF'],[data-fr-app='app'] [class*='bg-[#EEF'],[data-fr-app='app'] [class*='bg-[#EFF']{background-color:hsl(217 30% 18%) !important;}",
   "[data-fr-app='app'] [class*='border-[#D9D6FE'],[data-fr-app='app'] [class*='border-[#C7D']{border-color:hsl(217 60% 48%) !important;}",
+  // Advanced-Settings modal + panels: specific hardcoded light-hex surfaces -> Ycode dark (kept specific so template slide previews stay white)
+  "[data-fr-app='app'] [class*='bg-[#F3F3F6'],[data-fr-app='app'] [class*='bg-[#F8F8FA'],[data-fr-app='app'] [class*='bg-[#FAFAFA'],[data-fr-app='app'] [class*='bg-[#F5F5F5'],[data-fr-app='app'] [class*='bg-[#FBFBFD'],[data-fr-app='app'] [class*='bg-[#F7F7']{background-color:hsl(0 0% 13%) !important;}",
+  "[data-fr-app='app'] [class*='bg-[#ECE8F6'],[data-fr-app='app'] [class*='bg-[#EDE8'],[data-fr-app='app'] [class*='bg-[#F0F0F4'],[data-fr-app='app'] [class*='bg-[#EAE']{background-color:hsl(0 0% 16.5%) !important;}",
+  "[data-fr-app='app'] [class*='border-[#E7E9F2'],[data-fr-app='app'] [class*='border-[#EDEEEF'],[data-fr-app='app'] [class*='border-[#E7E'],[data-fr-app='app'] [class*='border-[#EDE'],[data-fr-app='app'] [class*='border-[#EAE']{border-color:hsl(0 0% 22%) !important;}",
   // hover states designed for light bg -> dark
   "[data-fr-app='app'] .hover\\:bg-gray-50:hover,[data-fr-app='app'] .hover\\:bg-gray-100:hover,[data-fr-app='app'] .hover\\:bg-slate-100:hover,[data-fr-app='app'] .hover\\:bg-neutral-100:hover{background-color:hsl(0 0% 18%) !important;}",
   // Ycode buttons: not pill-shaped; secondary/outline buttons use the input surface
@@ -113,7 +117,37 @@ const INJECT = `<script id="fr-ycode-js">
       });
     }catch(e){}
   }
-  function tick(){ ensure(); scrub(); fixCTAs(); }
+  // Interface cleanup ("refais l'interface façon Ycode"): remove clutter Presenton ships.
+  function hide(el){ if(el){ el.style.setProperty('display','none','important'); } }
+  function has(el,s){ return ((el.textContent||'').indexOf(s)>=0); }
+  function redesign(){
+    try{
+      // 1) model-status chip: "OpenAI (gpt-4o) · Image generation disabled · Web: …"
+      document.querySelectorAll("[class*='rounded-[50px]']").forEach(function(el){
+        if(has(el,'Image generation disabled')||has(el,'OpenAI (gpt')) hide(el);
+      });
+      // 2) decorative sparkle SVGs around the "Generate" hero title (svg siblings of the h1)
+      var h1=null; document.querySelectorAll('h1').forEach(function(e){ if(has(e,'Generate')) h1=e; });
+      if(h1){
+        var w1=h1.parentElement;
+        if(w1){ Array.prototype.forEach.call(w1.children,function(c){ if(c.tagName&&c.tagName.toLowerCase()==='svg') hide(c); });
+          var w2=w1.parentElement;
+          if(w2){ Array.prototype.forEach.call(w2.children,function(c){ if(c.tagName&&c.tagName.toLowerCase()==='svg') hide(c); }); }
+        }
+      }
+      // 3) ugly attachments uploader (label + dashed drop box) — user wants a clean prompt only
+      document.querySelectorAll('*').forEach(function(el){ if((el.textContent||'').trim()==='Attachments (optional)') hide(el.parentElement||el); });
+      document.querySelectorAll("[class*='border-dashed']").forEach(function(el){
+        if(el.querySelector && (el.querySelector('input[type=file]') || has(el,'Office docs') || has(el,'Attachments'))) hide(el);
+      });
+      // 4) remove Settings + Community (+ Help) from the sidebar
+      document.querySelectorAll('a,button').forEach(function(el){
+        var t=(el.textContent||'').trim(); var w=el.getBoundingClientRect().width;
+        if((t==='Settings'||t==='Community'||t==='Help')&&w>0&&w<190) hide(el);
+      });
+    }catch(e){}
+  }
+  function tick(){ ensure(); scrub(); fixCTAs(); redesign(); }
   var mo=new MutationObserver(tick);
   function boot(){ tick(); mo.observe(document.documentElement,{subtree:true,childList:true,characterData:true}); setInterval(tick,1500); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
