@@ -22,64 +22,52 @@ const AUTH = 'Basic ' + Buffer.from(USER + ':' + PASS).toString('base64');
 const BRAND = process.env.BRAND_NAME || 'Slides';
 const PORT = process.env.PORT || 3000;
 
-// Ycode look-and-feel: Presenton uses the same shadcn token system as Ycode
-// (hsl(var(--token))), so we override the tokens with Ycode's DARK values
-// (converted to HSL) + Inter font — instant visual coherence, no re-creation.
-const INJECT = `
-<style id="fr-ycode-theme">
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-  :root, .dark, html {
-    --background: 0 0% 10.5%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 12.5%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 15%;
-    --popover-foreground: 0 0% 96%;
-    --primary: 217 91% 60%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 17%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 17%;
-    --muted-foreground: 0 0% 63%;
-    --accent: 0 0% 19%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
-    --ring: 217 91% 60%;
-    --radius: 0.625rem;
-    --font-syne: 'Inter'; --font-unbounded: 'Inter'; --font-inter: 'Inter';
-    color-scheme: dark;
-  }
-  html { background: hsl(0 0% 10.5%); }
-  body, button, input, textarea, select, h1, h2, h3, h4, h5, h6, p, span, div, a, label {
-    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif !important;
-  }
-  /* debrand */
-  a[href*="presenton.ai"], a[href*="github.com/presenton"],
-  img[src*="logo" i], img[alt*="presenton" i], [aria-label*="presenton" i]{display:none !important;}
-</style>
-<script id="fr-ycode-js">
+// Ycode look-and-feel injected RESILIENTLY: Next.js App Router wipes inline
+// <head> tags on hydration, so instead of a static <style> we inject a script
+// that (re)creates a <style> + Inter <link> via a MutationObserver — surviving
+// hydration. Presenton uses the same shadcn tokens as Ycode (hsl(var(--token)))
+// so overriding the tokens with Ycode's DARK values (HSL) + Inter = coherence.
+const CSS_TEXT = [
+  ":root,.dark,html{",
+  "--background:0 0% 10.5%;--foreground:0 0% 98%;",
+  "--card:0 0% 12.5%;--card-foreground:0 0% 98%;",
+  "--popover:0 0% 15%;--popover-foreground:0 0% 96%;",
+  "--primary:217 91% 60%;--primary-foreground:0 0% 100%;",
+  "--secondary:0 0% 17%;--secondary-foreground:0 0% 98%;",
+  "--muted:0 0% 17%;--muted-foreground:0 0% 63%;",
+  "--accent:0 0% 19%;--accent-foreground:0 0% 98%;",
+  "--destructive:0 72% 51%;--destructive-foreground:0 0% 98%;",
+  "--border:0 0% 20%;--input:0 0% 20%;--ring:217 91% 60%;--radius:0.625rem;",
+  "--font-syne:'Inter';--font-unbounded:'Inter';--font-inter:'Inter';color-scheme:dark;}",
+  "html{background:hsl(0 0% 10.5%) !important;}",
+  "body,button,input,textarea,select,h1,h2,h3,h4,h5,h6,p,span,div,a,label{",
+  "font-family:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif !important;}",
+  "a[href*='presenton.ai'],a[href*='github.com/presenton'],img[src*='logo' i],img[alt*='presenton' i],[aria-label*='presenton' i]{display:none !important;}",
+].join('');
+
+const INJECT = `<script id="fr-ycode-js">
 (function(){
+  var BRAND=${JSON.stringify(BRAND)};
+  var CSS=${JSON.stringify(CSS_TEXT)};
+  var FONT='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap';
   var RE=/presenton/ig;
-  try{ document.documentElement.classList.add('dark'); }catch(e){}
+  function ensure(){
+    var head=document.head||document.documentElement;
+    if(!document.getElementById('fr-ycode-font')){var l=document.createElement('link');l.id='fr-ycode-font';l.rel='stylesheet';l.href=FONT;head.appendChild(l);}
+    var s=document.getElementById('fr-ycode-style');
+    if(!s||!s.isConnected){ if(!s){s=document.createElement('style');s.id='fr-ycode-style';s.textContent=CSS;} head.appendChild(s); }
+    try{ document.documentElement.classList.add('dark'); }catch(e){}
+  }
   function scrub(){
     try{
-      if(!document.documentElement.classList.contains('dark')) document.documentElement.classList.add('dark');
-      if(document.title && /presenton/i.test(document.title)) document.title=${JSON.stringify(BRAND)};
-      document.querySelectorAll('img,svg').forEach(function(el){
-        var s=(el.getAttribute('alt')||'')+' '+(el.getAttribute('aria-label')||'')+' '+(el.getAttribute('src')||'');
-        if(/presenton/i.test(s)) el.style.display='none';
-      });
-      if(document.body){
-        var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,null,false),n;
-        while((n=w.nextNode())){ if(RE.test(n.nodeValue)){ n.nodeValue=n.nodeValue.replace(RE,${JSON.stringify(BRAND)}); } }
-      }
+      if(document.title && RE.test(document.title)) document.title=BRAND;
+      document.querySelectorAll('img,svg').forEach(function(el){var t=(el.getAttribute('alt')||'')+' '+(el.getAttribute('aria-label')||'')+' '+(el.getAttribute('src')||'');if(RE.test(t))el.style.display='none';});
+      if(document.body){var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,null,false),n;while((n=w.nextNode())){if(RE.test(n.nodeValue))n.nodeValue=n.nodeValue.replace(RE,BRAND);}}
     }catch(e){}
   }
-  var mo=new MutationObserver(function(){scrub();});
-  function boot(){ scrub(); if(document.body) mo.observe(document.body,{subtree:true,childList:true,characterData:true}); }
+  function tick(){ ensure(); scrub(); }
+  var mo=new MutationObserver(tick);
+  function boot(){ tick(); mo.observe(document.documentElement,{subtree:true,childList:true,characterData:true}); setInterval(tick,1500); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
 })();
 </script>`;
@@ -109,8 +97,10 @@ const server = http.createServer((req, res) => {
       ur.on('data', (c) => chunks.push(c));
       ur.on('end', () => {
         let body = Buffer.concat(chunks).toString('utf8');
-        if (body.includes('</head>')) body = body.replace('</head>', INJECT + '</head>');
-        else if (body.includes('</body>')) body = body.replace('</body>', INJECT + '</body>');
+        // Inject at end of <body> — a sibling of the Next.js root, so the script
+        // runs after the body exists and survives head reconciliation.
+        if (body.includes('</body>')) body = body.replace('</body>', INJECT + '</body>');
+        else if (body.includes('</head>')) body = body.replace('</head>', INJECT + '</head>');
         else body += INJECT;
         res.writeHead(ur.statusCode, headers);
         res.end(body);
