@@ -70,6 +70,8 @@ const CSS_TEXT = [
   "[data-fr-app='app'] [class*='bg-[#F3F3F6'],[data-fr-app='app'] [class*='bg-[#F8F8FA'],[data-fr-app='app'] [class*='bg-[#FAFAFA'],[data-fr-app='app'] [class*='bg-[#F5F5F5'],[data-fr-app='app'] [class*='bg-[#FBFBFD'],[data-fr-app='app'] [class*='bg-[#F7F7']{background-color:hsl(0 0% 13%) !important;}",
   "[data-fr-app='app'] [class*='bg-[#ECE8F6'],[data-fr-app='app'] [class*='bg-[#EDE8'],[data-fr-app='app'] [class*='bg-[#F0F0F4'],[data-fr-app='app'] [class*='bg-[#EAE']{background-color:hsl(0 0% 16.5%) !important;}",
   "[data-fr-app='app'] [class*='border-[#E7E9F2'],[data-fr-app='app'] [class*='border-[#EDEEEF'],[data-fr-app='app'] [class*='border-[#E7E'],[data-fr-app='app'] [class*='border-[#EDE'],[data-fr-app='app'] [class*='border-[#EAE']{border-color:hsl(0 0% 22%) !important;}",
+  // decorative sparkle SVGs live INSIDE the hero <h1> (svg.absolute) — hide them
+  "[data-fr-app='app'] h1 svg,[data-fr-app='app'] h1 img{display:none !important;}",
   // hover states designed for light bg -> dark
   "[data-fr-app='app'] .hover\\:bg-gray-50:hover,[data-fr-app='app'] .hover\\:bg-gray-100:hover,[data-fr-app='app'] .hover\\:bg-slate-100:hover,[data-fr-app='app'] .hover\\:bg-neutral-100:hover{background-color:hsl(0 0% 18%) !important;}",
   // Ycode buttons: not pill-shaped; secondary/outline buttons use the input surface
@@ -129,6 +131,7 @@ const INJECT = `<script id="fr-ycode-js">
       // 2) decorative sparkle SVGs around the "Generate" hero title (svg siblings of the h1)
       var h1=null; document.querySelectorAll('h1').forEach(function(e){ if(has(e,'Generate')) h1=e; });
       if(h1){
+        h1.querySelectorAll('svg,img').forEach(hide);
         var w1=h1.parentElement;
         if(w1){ Array.prototype.forEach.call(w1.children,function(c){ if(c.tagName&&c.tagName.toLowerCase()==='svg') hide(c); });
           var w2=w1.parentElement;
