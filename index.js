@@ -42,6 +42,15 @@ const CSS_TEXT = [
   "html{background:hsl(0 0% 10.5%) !important;}",
   "body,button,input,textarea,select,h1,h2,h3,h4,h5,h6,p,span,div,a,label{",
   "font-family:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif !important;}",
+  // --- dark-theme fixes for Presenton's hardcoded light-theme elements ---
+  // kill the white scroll-fade sticky headers (they render as an ugly white bar on dark)
+  ".sticky.top-0{background-image:none !important;background-color:transparent !important;}",
+  // hardcoded dark navy/slate text (e.g. text-[#101323]) -> light so it's readable on dark
+  "[class*='text-[#10'],[class*='text-[#11'],[class*='text-[#0f'],[class*='text-[#0F'],[class*='text-[#1e'],[class*='text-[#1E'],[class*='text-[#18'],[class*='text-[#20'],[class*='text-[#02'],[class*='text-[#1d'],[class*='text-[#1D']{color:#f2f2f5 !important;-webkit-text-fill-color:#f2f2f5 !important;}",
+  // white chip/pill backgrounds (rounded-full) -> dark card so they match Ycode (slides aren't rounded-full, so untouched)
+  ".bg-white.rounded-full{background-color:hsl(0 0% 16%) !important;}",
+  // primary CTA peach gradient -> Ycode blue
+  "[class*='bg-[linear-gradient(270deg']{background-image:none !important;background-color:hsl(217 91% 60%) !important;color:#fff !important;-webkit-text-fill-color:#fff !important;}",
   "a[href*='presenton.ai'],a[href*='github.com/presenton'],img[src*='logo' i],img[alt*='presenton' i],[aria-label*='presenton' i]{display:none !important;}",
 ].join('');
 
