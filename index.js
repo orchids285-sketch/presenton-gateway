@@ -200,12 +200,14 @@ const INJECT = `<script id="fr-ycode-js">
         var cs=getComputedStyle(el); var r=el.getBoundingClientRect();
         if((cs.position==='sticky'||cs.position==='fixed') && r.width>0 && r.width<230 && r.left<70 && r.height>400) hide(el);
       });
-      // 7) CENTER the prompt column (Gamma-like): narrow the card + center the controls row + the CTA
+      // 7) Center a GENEROUS Gamma-like prompt card (do NOT shrink it) with a big prompt
+      //    space, controls centered on top, and Get Started left in its native bottom-right spot.
       var ta=document.querySelector('textarea');
       if(ta){
+        ta.style.setProperty('min-height','200px','important'); // big, comfortable prompt space
         var card=ta.closest && ta.closest("[class*='rounded-2xl']");
         if(card){
-          card.style.setProperty('max-width','640px','important');
+          card.style.setProperty('max-width','860px','important');
           card.style.setProperty('margin-left','auto','important');
           card.style.setProperty('margin-right','auto','important');
           card.style.setProperty('width','100%','important');
@@ -218,40 +220,75 @@ const INJECT = `<script id="fr-ycode-js">
         }
         // redundant "Prompt" label above the box (the box already says "Write prompt")
         document.querySelectorAll('span,label,p').forEach(function(s){ if((s.textContent||'').trim()==='Prompt' && s.getBoundingClientRect().width<130) hide(s); });
-        var gs=null; document.querySelectorAll('button').forEach(function(b){ if(has(b,'Get Started')) gs=b; });
-        if(gs){
-          gs.style.setProperty('margin-left','auto','important');
-          gs.style.setProperty('margin-right','auto','important');
-          if(gs.parentElement){ gs.parentElement.style.setProperty('display','flex','important'); gs.parentElement.style.setProperty('justify-content','center','important'); }
-        }
+        // Get Started keeps its native right-aligned position (no forced centering).
       }
     }catch(e){}
   }
-  // GAMMA-MODE: the /outline page (editable outline + "Select Template" tab + Generate)
-  // is the ugly step the user wants gone. Instead of showing it, we drive it automatically:
-  // once the outline finishes streaming we open the template tab, pick the first template,
-  // then click "Generate Presentation" ONCE -> the deck generates straight away like Gamma.
+  // Full-screen clean loader that HIDES Presenton's ugly black/white outline+template
+  // page. The user should go prompt -> loader -> finished slides, like Gamma.
+  function frOverlay(text, sub){
+    var o=document.getElementById('fr-gen-overlay');
+    if(!o){
+      o=document.createElement('div'); o.id='fr-gen-overlay';
+      o.style.cssText='position:fixed;inset:0;z-index:2147483600;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:hsl(0 0% 8%);font-family:Inter,ui-sans-serif,system-ui,sans-serif;';
+      var st=document.createElement('style'); st.textContent='@keyframes frspin{to{transform:rotate(360deg)}}';
+      var sp=document.createElement('div'); sp.style.cssText='width:36px;height:36px;border-radius:50%;border:3px solid hsl(0 0% 100% / 0.12);border-top-color:hsl(0 0% 82%);animation:frspin .8s linear infinite;';
+      var t=document.createElement('div'); t.id='fr-gen-text'; t.style.cssText='color:#ededed;font-size:15px;font-weight:500;letter-spacing:-0.01em;';
+      var s=document.createElement('div'); s.id='fr-gen-sub'; s.style.cssText='color:hsl(0 0% 52%);font-size:12.5px;';
+      o.appendChild(st); o.appendChild(sp); o.appendChild(t); o.appendChild(s);
+      (document.body||document.documentElement).appendChild(o);
+    }
+    o.style.display='flex';
+    var tt=document.getElementById('fr-gen-text'); if(tt) tt.textContent=text||'Creating your presentation…';
+    var ss=document.getElementById('fr-gen-sub'); if(ss) ss.textContent=sub||'';
+  }
+  function frOverlayHide(){ var o=document.getElementById('fr-gen-overlay'); if(o) o.style.display='none'; }
+
+  // GAMMA-MODE: never show the /outline page. Cover it with the loader and drive it:
+  // wait for the outline to stream, auto-pick the first built-in template, then click
+  // "Generate Presentation" once React has committed the selection. Retry behind the
+  // loader if the AI provider is momentarily rate limited, so it self-heals.
   function autoSkip(){
     try{
-      if(location.pathname.indexOf('/outline')!==0){ window.__frGenClicked=false; return; }
+      var p=location.pathname;
+      if(p.indexOf('/outline')!==0){
+        frOverlayHide();
+        window.__frGenClicked=false; window.__frTplAt=0; window.__frRetries=0;
+        return;
+      }
+      frOverlay('Creating your presentation…','Generating slides with AI');
       if(window.__frGenClicked) return;
+
+      var body=(document.body.textContent||'');
+      if(body.indexOf('rate limited')>=0 || body.indexOf('Generation Error')>=0 || body.indexOf('Internal server error')>=0){
+        window.__frGenClicked=false; // allow a retry
+        window.__frRetries=(window.__frRetries||0)+1;
+        if(window.__frRetries>14){ frOverlayHide(); return; } // give up after ~a minute, reveal the page
+        frOverlay('Still working…','High demand — retrying ('+window.__frRetries+')');
+        if(window.__frRetries%4!==0) return; // back off, don't hammer
+      }
+
       var gen=null;
       document.querySelectorAll('button').forEach(function(b){
         var t=(b.textContent||'').trim();
         if(t.indexOf('Generate Presentation')>=0 || t.indexOf('Select a Template')>=0) gen=b;
       });
-      if(!gen) return; // still streaming the outline ("Loading...") -> wait
+      if(!gen) return; // outline still streaming
       var gt=(gen.textContent||'').trim();
+
       if(gt.indexOf('Generate Presentation')>=0){
+        // TIMING FIX: wait until the template selection has been committed for >=1 tick,
+        // otherwise handleSubmit's closure still sees selectedTemplate=null and no-ops.
+        if(!window.__frTplAt) window.__frTplAt=Date.now();
+        if(Date.now()-window.__frTplAt < 1400) return;
         if(!gen.disabled){ window.__frGenClicked=true; gen.click(); }
         return;
       }
-      // gt === "Select a Template": make sure a template gets chosen
+      // "Select a Template": pick the FIRST BUILT-IN card (skip "Build Template" -> /custom-template)
+      window.__frTplAt=0;
       var tab=null;
       document.querySelectorAll("[role='tab'],button,a").forEach(function(b){ if((b.textContent||'').trim()==='Select Template') tab=b; });
-      if(tab && tab.getAttribute('data-state')!=='active'){ tab.click(); return; } // open the tab so cards mount
-      // pick the FIRST BUILT-IN template card. The "Build Template" card also uses
-      // rounded-[22px] but navigates to /custom-template, so skip it explicitly.
+      if(tab && tab.getAttribute('data-state')!=='active'){ tab.click(); return; }
       var card=null;
       document.querySelectorAll("[class*='rounded-[22px]']").forEach(function(el){
         if(card) return;
