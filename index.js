@@ -72,6 +72,12 @@ const CSS_TEXT = [
   "[data-fr-app='app'] [class*='border-[#E7E9F2'],[data-fr-app='app'] [class*='border-[#EDEEEF'],[data-fr-app='app'] [class*='border-[#E7E'],[data-fr-app='app'] [class*='border-[#EDE'],[data-fr-app='app'] [class*='border-[#EAE']{border-color:hsl(0 0% 22%) !important;}",
   // decorative sparkle SVGs live INSIDE the hero <h1> (svg.absolute) — hide them
   "[data-fr-app='app'] h1 svg,[data-fr-app='app'] h1 img{display:none !important;}",
+  // prompt box: kill the ugly whitish border, make it a FILLED dark input (Ycode bg-input, rounded)
+  "[data-fr-app='app'] [class*='border-[#DBDBDB']{border:0 !important;background-color:hsl(0 0% 100% / 0.05) !important;border-radius:14px !important;box-shadow:none !important;}",
+  "[data-fr-app='app'] textarea{background-color:transparent !important;border:0 !important;box-shadow:none !important;}",
+  // remove white separator lines
+  "[data-fr-app='app'] hr{display:none !important;}",
+  "[data-fr-app='app'] [class*='border-[#EEE'],[data-fr-app='app'] [class*='border-[#F0'],[data-fr-app='app'] [class*='border-[#DDD'],[data-fr-app='app'] [class*='border-white']{border-color:hsl(0 0% 18%) !important;}",
   // hover states designed for light bg -> dark
   "[data-fr-app='app'] .hover\\:bg-gray-50:hover,[data-fr-app='app'] .hover\\:bg-gray-100:hover,[data-fr-app='app'] .hover\\:bg-slate-100:hover,[data-fr-app='app'] .hover\\:bg-neutral-100:hover{background-color:hsl(0 0% 18%) !important;}",
   // ===== Ycode BUTTON style =====
@@ -145,11 +151,26 @@ const INJECT = `<script id="fr-ycode-js">
       document.querySelectorAll("[class*='border-dashed']").forEach(function(el){
         if(el.querySelector && (el.querySelector('input[type=file]') || has(el,'Office docs') || has(el,'Attachments'))) hide(el);
       });
-      // 4) remove Settings + Community (+ Help) from the sidebar
+      // 4) remove Settings + Community + Templates + Help from the sidebar (keep Dashboard + prompt only)
       document.querySelectorAll('a,button').forEach(function(el){
         var t=(el.textContent||'').trim(); var w=el.getBoundingClientRect().width;
-        if((t==='Settings'||t==='Community'||t==='Help')&&w>0&&w<190) hide(el);
+        if((t==='Settings'||t==='Community'||t==='Help'||t==='Templates')&&w>0&&w<190) hide(el);
       });
+      // 5) stick the generation controls (Auto slides / Auto (English) / sliders) into one Ycode-style segmented bar
+      var autoBtn=null; document.querySelectorAll('button').forEach(function(b){ if(has(b,'Auto slides')) autoBtn=b; });
+      if(autoBtn && autoBtn.parentElement){
+        var c=autoBtn.parentElement;
+        c.style.setProperty('gap','4px','important');
+        c.style.setProperty('background-color','hsl(0 0% 100% / 0.05)','important');
+        c.style.setProperty('border-radius','12px','important');
+        c.style.setProperty('padding','4px','important');
+        c.style.setProperty('width','fit-content','important');
+        c.style.setProperty('flex-wrap','nowrap','important');
+        Array.prototype.forEach.call(c.children,function(ch){
+          var bt = ch.tagName==='BUTTON' ? ch : (ch.querySelector && ch.querySelector('button'));
+          if(bt){ bt.style.setProperty('background-color','transparent','important'); bt.style.setProperty('border','0','important'); bt.style.setProperty('box-shadow','none','important'); }
+        });
+      }
     }catch(e){}
   }
   function tick(){ ensure(); scrub(); fixCTAs(); redesign(); }
