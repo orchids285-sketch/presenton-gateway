@@ -45,8 +45,9 @@ const CSS_TEXT = [
   // --- dark-theme fixes for Presenton's hardcoded light-theme elements ---
   // kill the white scroll-fade sticky headers (they render as an ugly white bar on dark)
   ".sticky.top-0{background-image:none !important;background-color:transparent !important;}",
-  // hardcoded dark navy/slate text (e.g. text-[#101323]) -> light so it's readable on dark
-  "[class*='text-[#10'],[class*='text-[#11'],[class*='text-[#0f'],[class*='text-[#0F'],[class*='text-[#1e'],[class*='text-[#1E'],[class*='text-[#18'],[class*='text-[#20'],[class*='text-[#02'],[class*='text-[#1d'],[class*='text-[#1D']{color:#f2f2f5 !important;-webkit-text-fill-color:#f2f2f5 !important;}",
+  // hardcoded dark arbitrary-hex text (text-[#191919], text-[#101323], …) -> light, but ONLY on app pages
+  // (the editor keeps dark text on white slides). Covers all dark hexes #00..#3f.
+  "[data-fr-app='app'] [class*='text-[#0'],[data-fr-app='app'] [class*='text-[#1'],[data-fr-app='app'] [class*='text-[#2'],[data-fr-app='app'] [class*='text-[#3']{color:#f2f2f5 !important;-webkit-text-fill-color:#f2f2f5 !important;}",
   // white chip/pill backgrounds (rounded-full) -> dark card so they match Ycode (slides aren't rounded-full, so untouched)
   ".bg-white.rounded-full{background-color:hsl(0 0% 16%) !important;}",
   // primary CTAs (Presenton overrides bg-primary with an inline peach gradient) -> Ycode blue (CSS !important beats inline)
