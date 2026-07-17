@@ -75,9 +75,11 @@ const CSS_TEXT = [
   // prompt box: kill the ugly whitish border, make it a FILLED dark input (Ycode bg-input, rounded)
   "[data-fr-app='app'] [class*='border-[#DBDBDB']{border:0 !important;background-color:hsl(0 0% 100% / 0.05) !important;border-radius:14px !important;box-shadow:none !important;}",
   "[data-fr-app='app'] textarea{background-color:transparent !important;border:0 !important;box-shadow:none !important;}",
-  // remove white separator lines
+  // remove white separator lines (hr + the light divider borders like border-[#E1E1E5])
   "[data-fr-app='app'] hr{display:none !important;}",
-  "[data-fr-app='app'] [class*='border-[#EEE'],[data-fr-app='app'] [class*='border-[#F0'],[data-fr-app='app'] [class*='border-[#DDD'],[data-fr-app='app'] [class*='border-white']{border-color:hsl(0 0% 18%) !important;}",
+  "[data-fr-app='app'] [class*='border-[#E1'],[data-fr-app='app'] [class*='border-[#E5'],[data-fr-app='app'] [class*='border-[#E8'],[data-fr-app='app'] [class*='border-[#EEE'],[data-fr-app='app'] [class*='border-[#F0'],[data-fr-app='app'] [class*='border-[#DDD'],[data-fr-app='app'] [class*='border-white']{border-color:transparent !important;}",
+  // sidebar light bg -> dark
+  "[data-fr-app='app'] [class*='bg-[#F6'],[data-fr-app='app'] [class*='bg-[#F9'],[data-fr-app='app'] [class*='bg-[#FCF']{background-color:hsl(0 0% 11%) !important;}",
   // hover states designed for light bg -> dark
   "[data-fr-app='app'] .hover\\:bg-gray-50:hover,[data-fr-app='app'] .hover\\:bg-gray-100:hover,[data-fr-app='app'] .hover\\:bg-slate-100:hover,[data-fr-app='app'] .hover\\:bg-neutral-100:hover{background-color:hsl(0 0% 18%) !important;}",
   // ===== Ycode BUTTON style =====
