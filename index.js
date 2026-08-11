@@ -314,7 +314,54 @@ function proxyHeaders(src) {
   return h;
 }
 
+// The provider config route hands out the LLM API key IN PLAINTEXT to anyone who
+// asks — no auth, and this gateway is what the customer's browser talks to, so
+// one GET would leak the account key to every user of the tool. The key is set
+// once, server-side; nobody downstream ever needs to read or change it.
+//
+// GET  -> answer the shape the app needs (it only checks that a provider is
+//         configured, so presence is enough) with every secret blanked.
+// POST -> refuse, so the tool's Settings page cannot overwrite the working
+//         provider with a half-filled one.
+const CONFIG_PATH = /^\/api\/user-config(\?|$)/;
+const SECRET_KEY = /(_API_KEY|_KEY|SECRET|TOKEN|PASSWORD)$/i;
+
+function handleConfig(req, res) {
+  if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH') {
+    res.writeHead(403, { 'content-type': 'application/json', 'cache-control': 'no-store' });
+    res.end('{"error":"provider configuration is managed for you"}');
+    return true;
+  }
+  if (req.method !== 'GET') return false;
+  const up = https.request(
+    { hostname: UPSTREAM, port: 443, path: req.url, method: 'GET', headers: proxyHeaders(req.headers) },
+    (ur) => {
+      let body = '';
+      ur.setEncoding('utf8');
+      ur.on('data', (c) => { body += c; });
+      ur.on('end', () => {
+        let out = body;
+        try {
+          const j = JSON.parse(body);
+          Object.keys(j).forEach((k) => {
+            // Keep the field present — the app reads presence, not the value —
+            // but never let the real secret cross this boundary.
+            if (SECRET_KEY.test(k) && typeof j[k] === 'string' && j[k]) j[k] = 'configured';
+          });
+          out = JSON.stringify(j);
+        } catch (e) { /* not JSON: pass through untouched */ }
+        res.writeHead(ur.statusCode, { 'content-type': 'application/json', 'cache-control': 'no-store' });
+        res.end(out);
+      });
+    }
+  );
+  up.on('error', () => { if (!res.headersSent) res.writeHead(502); res.end('{}'); });
+  up.end();
+  return true;
+}
+
 const server = http.createServer((req, res) => {
+  if (CONFIG_PATH.test(req.url || '') && handleConfig(req, res)) return;
   const opts = { hostname: UPSTREAM, port: 443, path: req.url, method: req.method, headers: proxyHeaders(req.headers) };
   const up = https.request(opts, (ur) => {
     const ct = String(ur.headers['content-type'] || '');
