@@ -150,6 +150,20 @@ const INJECT = `<script id="fr-ycode-js">
       if(document.title && RE.test(document.title)) document.title=BRAND;
       document.querySelectorAll('img,svg').forEach(function(el){var t=(el.getAttribute('alt')||'')+' '+(el.getAttribute('aria-label')||'')+' '+(el.getAttribute('src')||'');if(RE.test(t))el.style.display='none';});
       if(document.body){var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,null,false),n;while((n=w.nextNode())){if(RE.test(n.nodeValue))n.nodeValue=n.nodeValue.replace(RE,BRAND);}}
+      // The setup wizard promises "Runs locally on your device. Your API keys and
+      // generation setup stay on your machine." That is true of the desktop build
+      // and FALSE here: this is a hosted instance shared by the workspace, so a key
+      // typed in goes to a server. Telling a paying customer their credentials never
+      // leave their machine, when they do, is the kind of claim that has to be
+      // corrected rather than left because it sounds reassuring.
+      if(document.body){
+        var w2=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,null,false),m;
+        while((m=w2.nextNode())){
+          if(m.nodeValue && m.nodeValue.indexOf('stay on your machine')>=0){
+            m.nodeValue='This is a hosted workspace tool. Anything you enter here is stored on the server that runs it.';
+          }
+        }
+      }
     }catch(e){}
   }
   // Presenton's primary CTAs use an INLINE peach gradient (Get Started / New Template / …).
