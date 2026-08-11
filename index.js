@@ -16,6 +16,18 @@ const tls = require('tls');
 const net = require('net');
 
 const UPSTREAM = process.env.UPSTREAM_HOST || 'presenton-production.up.railway.app';
+// The origin holds the LLM provider key and serves it in plaintext on an
+// unauthenticated route, so it must not be reachable from the internet at all:
+// its public domain is removed and this gateway reaches it over Railway's
+// PRIVATE network instead. That network is plain HTTP and IPv6-only, hence the
+// scheme/port switch and family:6 — Node would otherwise try an A record that
+// does not exist. Defaults keep the old public-HTTPS behaviour, so the gateway
+// still runs unchanged anywhere those variables are not set.
+const UP_SCHEME = (process.env.UPSTREAM_SCHEME || 'https').toLowerCase();
+const UP_PORT = Number(process.env.UPSTREAM_PORT || (UP_SCHEME === 'http' ? 80 : 443));
+const UP_PRIVATE = UP_SCHEME === 'http';
+const agentFor = () => (UP_PRIVATE ? http : https);
+const dialOpts = () => (UP_PRIVATE ? { family: 6 } : {});
 const USER = process.env.PRESENTON_USER || 'fr';
 const PASS = process.env.PRESENTON_PASS || 'FrPresenton2026Aa';
 const AUTH = 'Basic ' + Buffer.from(USER + ':' + PASS).toString('base64');
@@ -333,8 +345,8 @@ function handleConfig(req, res) {
     return true;
   }
   if (req.method !== 'GET') return false;
-  const up = https.request(
-    { hostname: UPSTREAM, port: 443, path: req.url, method: 'GET', headers: proxyHeaders(req.headers) },
+  const up = agentFor().request(
+    Object.assign({ hostname: UPSTREAM, port: UP_PORT, path: req.url, method: 'GET', headers: proxyHeaders(req.headers) }, dialOpts()),
     (ur) => {
       let body = '';
       ur.setEncoding('utf8');
@@ -362,8 +374,8 @@ function handleConfig(req, res) {
 
 const server = http.createServer((req, res) => {
   if (CONFIG_PATH.test(req.url || '') && handleConfig(req, res)) return;
-  const opts = { hostname: UPSTREAM, port: 443, path: req.url, method: req.method, headers: proxyHeaders(req.headers) };
-  const up = https.request(opts, (ur) => {
+  const opts = Object.assign({ hostname: UPSTREAM, port: UP_PORT, path: req.url, method: req.method, headers: proxyHeaders(req.headers) }, dialOpts());
+  const up = agentFor().request(opts, (ur) => {
     const ct = String(ur.headers['content-type'] || '');
     const isHtml = ct.includes('text/html');
     const headers = Object.assign({}, ur.headers);
