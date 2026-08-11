@@ -331,19 +331,18 @@ function proxyHeaders(src) {
 // one GET would leak the account key to every user of the tool. The key is set
 // once, server-side; nobody downstream ever needs to read or change it.
 //
-// GET  -> answer the shape the app needs (it only checks that a provider is
-//         configured, so presence is enough) with every secret blanked.
-// POST -> refuse, so the tool's Settings page cannot overwrite the working
-//         provider with a half-filled one.
+// This instance is shared by every customer of the workspace, so a key one of
+// them saves must not be readable by the next. GET therefore answers the shape
+// the app needs — it only checks that a provider is configured, so presence is
+// enough — with every secret replaced by the word "configured". Writes are left
+// alone so Settings still works.
 const CONFIG_PATH = /^\/api\/user-config(\?|$)/;
 const SECRET_KEY = /(_API_KEY|_KEY|SECRET|TOKEN|PASSWORD)$/i;
 
 function handleConfig(req, res) {
-  if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH') {
-    res.writeHead(403, { 'content-type': 'application/json', 'cache-control': 'no-store' });
-    res.end('{"error":"provider configuration is managed for you"}');
-    return true;
-  }
+  // Writes MUST pass through: this is the one place a customer sets their own
+  // provider key, and blocking it would leave the tool permanently unable to
+  // generate. Only the READ is sanitised.
   if (req.method !== 'GET') return false;
   const up = agentFor().request(
     Object.assign({ hostname: UPSTREAM, port: UP_PORT, path: req.url, method: 'GET', headers: proxyHeaders(req.headers) }, dialOpts()),
